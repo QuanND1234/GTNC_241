@@ -85,6 +85,7 @@ class Trie:
 
     # basic insert
     def insert_word(self, word, current_str = '', type = 'terminal'):
+        self.max_length = max(self.max_length, len(word))
         current_node = self.root
         # iter through input word
         for letter in word:
@@ -188,4 +189,4 @@ class Trie:
                         match_num += result[-1]
                         return result
                 pass
-        return current_node.string, current_node.terminal, current_node.fragment, error_num, match_num
+        return [current_node.string, current_node.terminal, current_node.fragment, error_num, match_num]

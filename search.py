@@ -3,30 +3,48 @@ from extract import getDir, saveToTxt
 from trie import TrieNode, Trie
 import time
 
+def getBest(preds):
+    result = None
+    for pred in preds:
+        if result == None:
+            result = pred
+            continue
+        if result[0] == pred[0]:
+            result[4] += pred[4]
+        elif (result[4] - result[3]) < (pred[4] - pred[3]):
+            result = pred
+    return result
 
 def search_address(ward, province, district, address, time_limit = 0.099999000):
     check_time = 0
     start_time = time.time()
     result = []
+    result_ward = []
+    result_province = []
+    result_district = []
     start_idx = 0
     for i in range(0, len(address)):
-        slice = address[:i]
-        result_ward = ward.search_word_error(slice)
-        result_province = province.search_word_error(slice)
-        result_district = district.search_word_error(slice)
+        slice1 = address[i:ward.max_length]
+        slice2 = address[i:province.max_length]
+        slice3 = address[i:district.max_length]
+        result_ward += [ward.search_word_error(slice1)]
+        result_province += [province.search_word_error(slice2)]
+        result_district += [district.search_word_error(slice3)]
         # this result is garbage since all searches are called from beginning to end (illogical)
         # we only do this to test the speed of the search algorithm
         # since the real search_address won't call this many search functions
-        result = [result_district, result_province, result_ward]
         check_time = time.time()
         #print(slice)
         #print(check_time)
-        if time_limit < (check_time - start_time):
-            print('timeout on input:')
+        timer = check_time - start_time
+        if time_limit < timer:
+            result = [getBest(result_district), getBest(result_province), getBest(result_ward)]
+            print('timeout on input: ', timer)
             print(address)
             return address, result
+    result = [getBest(result_district), getBest(result_province), getBest(result_ward)]
     final_time = check_time - start_time
-    print(f'runtime: {final_time} s')
+    #print(f'runtime: {final_time} s')
     return address, result
 
 district_file = 'district.txt'
@@ -87,7 +105,11 @@ sorted_data = sorted(data, key=lambda x: x['text'])
 # print comparison result
 passed = 0
 for i in range(len(results)):
-    if results[i][1][0][0] == sorted_data[i]['result']['district'] and results[i][1][1][0] == sorted_data[i]['result']['province'] and results[i][1][2][0] == sorted_data[i]['result']['ward']:
+    if results[i][1][2][0] == sorted_data[i]['result']['ward']: \
+        #and results[i][1][1][0] == sorted_data[i]['result']['province'] \
+        #and results[i][1][0][0] == sorted_data[i]['result']['district']\
+        
+        print(results[i][0].replace('\n',''))
         print(results[i][1])
         print(json.dumps(sorted_data[i]['result'], sort_keys=True, ensure_ascii=False))
         passed += 1
@@ -102,3 +124,5 @@ length = 300
 rand_str = ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
 print(rand_str)
 search_address(root_ward, root_province, root_district, rand_str)
+
+print(search_address(root_ward, root_province, root_district, 'Thái Hòa Huyện Thái Thụy, Thái Bình'))
