@@ -9,9 +9,9 @@ def getBest(preds):
         if result == None:
             result = pred
             continue
-        if result[0] == pred[0]:
-            result[4] += pred[4]
-        elif (result[4] - result[3]) < (pred[4] - pred[3]):
+        if result['result'] == pred['result']:
+            result['match_num'] += pred['match_num']
+        elif (result['match_num'] - result['error_num']) < (pred['match_num'] - pred['error_num']):
             result = pred
     return result
 
@@ -77,8 +77,6 @@ saveToTxt(root_district.log(), 'root_district.txt')
 saveToTxt(root_province.log(), 'root_province.txt')
 saveToTxt(root_ward.log(), 'root_ward.txt')
 
-print(root_ward.search_word_error('Xuân Lâm'))
-print(root_ward.search_word_error('Xn Lâm'))
 #root_district.printCount()
 
 #==================================================
@@ -108,9 +106,9 @@ sorted_data = sorted(data, key=lambda x: x['text'])
 # print comparison result
 passed = 0
 for i in range(len(results)):
-    if results[i][1][2][0] == sorted_data[i]['result']['ward']: \
-        #and results[i][1][1][0] == sorted_data[i]['result']['province'] \
-        #and results[i][1][0][0] == sorted_data[i]['result']['district']\
+    if results[i][1][2]['result'] == sorted_data[i]['result']['ward']: \
+        #and results[i][1][1]['result'] == sorted_data[i]['result']['province'] \
+        #and results[i][1][0]['result'] == sorted_data[i]['result']['district']\
         
         print(results[i][0].replace('\n',''))
         print(results[i][1])
@@ -132,3 +130,5 @@ print(search_address(root_ward, root_province, root_district, 'Thái Hòa Huyệ
 
 print(len(results))
 print((end_time-start_time)/len(results))
+print(root_ward.search_word_error('Xuân Lâm'))
+print(root_ward.search_word_error('nl Lâm'))

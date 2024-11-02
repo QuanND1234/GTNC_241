@@ -161,7 +161,7 @@ class Trie:
             #print(prefix)
             #print(frag)
             print(mix)
-            self.insert_word(mix, type='fragment', result=word)
+            self.insert_word(mix, type='mix', result=word)
         return
 
     # def search_children_closest(letter, current_node):
@@ -208,10 +208,16 @@ class Trie:
                 for child in current_node.children:        
                     result = self.search_word_error(word[letter:], child)
                     if result != None:
-                        error_num += result[-2]
-                        match_num += result[-1]
+                        error_num += result['error_num']
+                        match_num += result['match_num']
                         return result
                 pass
-        return [current_node.result, current_node.terminal, current_node.fragment, error_num, match_num]
+        return {'result': current_node.result,
+                'string': current_node.string,
+                'terminal': current_node.terminal,
+                'fragment': current_node.fragment,
+                'mix': current_node.mix,
+                'error_num': error_num,
+                'match_num': match_num}
     
     #def search
