@@ -86,8 +86,11 @@ print(root_ward.search_word_error('Xn Lâm'))
 text_file = 'text.txt'
 text_data = open(getDir(text_file), encoding='utf8')
 results = []
+
+start_time = time.time()    
 for i in text_data:
     results.append(search_address(root_ward, root_province, root_district, i))
+end_time = time.time()
 #print(results)
 
 #==================================================
@@ -126,3 +129,6 @@ print(rand_str)
 search_address(root_ward, root_province, root_district, rand_str)
 
 print(search_address(root_ward, root_province, root_district, 'Thái Hòa Huyện Thái Thụy, Thái Bình'))
+
+print(len(results))
+print((end_time-start_time)/len(results))

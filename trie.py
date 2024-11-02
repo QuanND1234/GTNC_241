@@ -4,11 +4,13 @@ class TrieNode:
     # constructor
     def __init__(self, string = '', letter = ''):
         self.string = string
+        self.result = None
         self.letter = letter
         self.children = []
         # end of legit word
         self.terminal = False
         self.fragment = False
+        self.mix = False
         # increase static counter
         TrieNode.count += 1
         
@@ -30,6 +32,8 @@ class TrieNode:
     def log(self, line_break = '\n',):
         log = ''
         log += self.logString(line_break)
+        if self.terminal or self.mix:
+            log += ': ' + self.result
         for child in self.children:
             log += child.log(line_break + TrieNode.indent)
         return log
@@ -84,7 +88,7 @@ class Trie:
         return self.root.logFragment(line_break = line_break)
 
     # basic insert
-    def insert_word(self, word, current_str = '', type = 'terminal'):
+    def insert_word(self, word, current_str='', type='terminal', result=None):
         self.max_length = max(self.max_length, len(word))
         current_node = self.root
         # iter through input word
@@ -103,8 +107,13 @@ class Trie:
                 current_node = current_node.children[-1]
         if type == 'terminal':
             current_node.terminal = True
+            current_node.result = current_node.string
         elif type == 'fragment':
             current_node.fragment = True
+            current_node.result = result
+        elif type == 'mix':
+            current_node.mix = True
+            current_node.result = result
         #print(current_str)
         return
 
@@ -125,7 +134,7 @@ class Trie:
                     break
             if (not found):
                 pass
-        return current_node.string, current_node.terminal
+        return current_node.result, current_node.terminal
 
     # insert both the word and the ending fragments for each word into trie 
     def insert_word_frag(self, word):
@@ -138,7 +147,21 @@ class Trie:
             frag = word[i:]
             #print(prefix)
             #print(frag)
-            self.insert_word(frag, prefix, type = 'fragment')
+            self.insert_word(frag, current_str=prefix, type='fragment')
+        return
+    
+    def insert_word_shift(self, word):
+        # insert the full word with type terminal
+        self.insert_word(word)
+        # insert the mix
+        for i in range(1, len(word)):
+            prefix = word[:i]
+            frag = word[i:]
+            mix = frag + prefix
+            #print(prefix)
+            #print(frag)
+            print(mix)
+            self.insert_word(mix, type='fragment', result=word)
         return
 
     # def search_children_closest(letter, current_node):
@@ -189,4 +212,6 @@ class Trie:
                         match_num += result[-1]
                         return result
                 pass
-        return [current_node.string, current_node.terminal, current_node.fragment, error_num, match_num]
+        return [current_node.result, current_node.terminal, current_node.fragment, error_num, match_num]
+    
+    #def search
