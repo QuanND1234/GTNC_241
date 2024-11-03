@@ -130,7 +130,8 @@ def test(root_district, root_province, root_ward):
 
     print(search_address(Trie.search_word,root_ward, root_province, root_district, 'Thái Hòa Huyện Thái Thụy, Thái Bình'))
     print(root_ward.search_word('Xuân Lâm'))
-    print(root_ward.search_word('Xn Lâm'))
+    print('test result: ', root_ward.search_word_leven('Bình Chau'))
+    #print(root_ward.search_word_leven('Xn Lâm'))
     return
 
 if __name__ == "__main__":

@@ -1,15 +1,19 @@
-
-def levenshtein(str1, str2, m=-1, n=-1):
-    # str1 is empty
-    if m == -len(str1)-1:
-        return 0
+def levenshtein(str1, str2, m=None, n=None):
+    if m == None:
+        m = len(str1)
     # str2 is empty
-    if n == -len(str2)-1:
-        return 0
-    if str1[m] == str2[n]:
+    if n == None:
+        n = len(str2)
+    # str1 is empty
+    if m == 0:
+        return n
+    # str2 is empty
+    if n == 0:
+        return m
+    if str1[m - 1] == str2[n - 1]:
         return levenshtein(str1, str2, m - 1, n - 1)
     return 1 + min(
-        # Insert
+        # Insert     
         levenshtein(str1, str2, m, n - 1),
         min(
             # Remove
@@ -17,7 +21,7 @@ def levenshtein(str1, str2, m=-1, n=-1):
             # Replace
             levenshtein(str1, str2, m - 1, n - 1))
     )
-
+ 
 class TrieNode:
     count = 0
     indent = '  '
@@ -32,6 +36,9 @@ class TrieNode:
         self.fragment = False
         # increase static counter
         TrieNode.count += 1
+        
+    def matchLetter(self, letter):
+        return letter == self.letter
         
     # log number of nodes
     def printCount(self):
@@ -141,7 +148,7 @@ class Trie:
             for child in current_node.children:
                 #print(child.letter)
                 #print(child.terminal)
-                if letter == child.letter:
+                if child.matchLetter(letter):
                     # switch node
                     current_node = child
                     found = True
@@ -151,23 +158,59 @@ class Trie:
         return {'string': current_node.string,
                 'terminal': current_node.terminal}
 
-    '''
-    def search_word_leven(self, word, node=None, idx=0, lim=0.5):
+
+
+    # idea: given a max chance number at the beginning let's say 2, 
+    # if leven increase, chance -=1
+    # if leven not increase, chance +=1 but can't exceed max (2)
+    # if chance < 0, auto return none
+    def search_word_leven(self, word, node=None, current_leven=0, current_chance=2, max_chance=1):
         current_node = node if node else self.root
         # base cases:
-        leven = levenshtein(current_node.string, word)
-        if leven > 3:
+        sub_word = word[:current_node.depth]
+        leven = levenshtein(current_node.string, sub_word)
+        if leven > current_leven:
+            print('miss a chance')
+            current_chance -= 1
+        elif leven == current_leven and current_chance < max_chance:
+            current_chance += 0.5
+        print(sub_word + '|' + current_node.string + ': ' , leven, current_leven, current_chance)
+        if current_chance < 0:
+            print('out of chance')
             return None
-            
         
-        # iter through input word
-        for letter in word:
-            # iter though child node
-            for child in current_node.children:
-                child_node = self.search_word_leven(word, child)    
-            if (not found):
-                pass
-        return {'string': current_node.string,
+        if sub_word == 'Bình Chau' and current_node.string == 'Bình Châu':
+            i = 1
+        if current_node.terminal:
+            return {'string': current_node.string,
+                    'terminal': current_node.terminal,
+                    'leven': leven}
+        
+        # recursion ============================
+        children = []
+        result = {'string': current_node.string,
                 'terminal': current_node.terminal,
-                'leven': leven}
-    '''
+                'leven': -1}
+        # iter through input word
+        #for letter in range(current_node.depth, len(word)):
+            # iter though child node
+        if current_node.depth >= len(word):
+            return None
+        print(word[current_node.depth] + '|child num: ', len(current_node.children))
+        for child in current_node.children:
+            child_node = None
+            if child.matchLetter(word[current_node.depth]):
+                child_node = self.search_word_leven(word, child, current_leven=leven, current_chance=current_chance)
+            elif current_chance >= 0:
+                child_node = self.search_word_leven(word, child, current_leven=leven, current_chance=current_chance)
+                pass
+            if not child_node:
+                continue
+            if result['leven'] == -1 or result['leven'] > child_node['leven']:
+                result = child_node
+                pass
+        #if (not child_node):
+        #    pass
+        #print(result)
+        return result
+    
