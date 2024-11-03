@@ -1,3 +1,27 @@
+
+def levenshteinRecursive(str1, str2, m, n):
+    # str1 is empty
+    if m == 0:
+        return n
+    # str2 is empty
+    if n == 0:
+        return m
+    if str1[m - 1] == str2[n - 1]:
+        return levenshteinRecursive(str1, str2, m - 1, n - 1)
+    return 1 + min(
+          # Insert     
+        levenshteinRecursive(str1, str2, m, n - 1),
+        min(
+              # Remove
+            levenshteinRecursive(str1, str2, m - 1, n),
+          # Replace
+            levenshteinRecursive(str1, str2, m - 1, n - 1))
+    )    
+str1 = "kitten"
+str2 = "sitting"
+distance = levenshteinRecursive(str1, str2, len(str1), len(str2))
+print("Levenshtein Distance:", distance)
+
 class TrieNode:
     count = 0
     indent = '  '
@@ -127,66 +151,4 @@ class Trie:
                 pass
         return current_node.string, current_node.terminal
 
-    # insert both the word and the ending fragments for each word into trie 
-    def insert_word_frag(self, word):
-        #print('============================')
-        # insert the full word with type terminal
-        self.insert_word(word)
-        # insert the fragments
-        for i in range(1, len(word)):
-            prefix = word[:i]
-            frag = word[i:]
-            #print(prefix)
-            #print(frag)
-            self.insert_word(frag, prefix, type = 'fragment')
-        return
-
-    # def search_children_closest(letter, current_node):
-    #     found = False
-    #     # iter though child node
-    #     for child in current_node.children:
-    #         #print(child.letter)
-    #         #print(child.terminal)
-    #         if letter == child.letter:
-    #             # switch node
-    #             current_node = child
-    #             found = True
-    #             break
-    #     if (not found):
-    #         for child in current_node.children:
-    #             current_node = search_children_closest(letter, child)
-    #         #error_num += 1
-    #         pass
-    #     return current_node
-
-    def search_word_error(self, word, node=None):
-        error_lim = 0.2 * len(word)
-        error_num = 0
-        match_num = 0
-        if not node:
-            current_node = self.root
-        else:
-            current_node = node
-        # iter through input word
-        for letter in range(len(word)):
-            found = False
-            # iter though child node
-            for child in current_node.children:
-                #print(child.letter)
-                #print(child.terminal)
-                if word[letter] == child.letter:
-                    match_num += 1
-                    # switch node
-                    current_node = child
-                    found = True
-                    break
-            if (not found):
-                error_num += 1
-                for child in current_node.children:        
-                    result = self.search_word_error(word[letter:], child)
-                    if result != None:
-                        error_num += result[-2]
-                        match_num += result[-1]
-                        return result
-                pass
-        return [current_node.string, current_node.terminal, current_node.fragment, error_num, match_num]
+    
