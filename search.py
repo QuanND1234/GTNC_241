@@ -2,6 +2,7 @@ import json
 from extract import getDir, saveToTxt
 from trie import TrieNode, Trie
 import time
+import os
 
 def getBest(lst):
     return lst[0]
@@ -29,11 +30,11 @@ def search_address(func, ward, province, district, address, time_limit = 0.09999
         #print(check_time)
         timer = check_time - start_time
         if time_limit < timer:
-            result = [getBest(result_district), getBest(result_province), getBest(result_ward)]
+            result = {'district': getBest(result_district), 'provice': getBest(result_province), 'ward': getBest(result_ward)}
             print('timeout on input: ', timer)
             print(address)
             return address, result
-    result = [getBest(result_district), getBest(result_province), getBest(result_ward)]
+    result = {'district': getBest(result_district), 'provice': getBest(result_province), 'ward': getBest(result_ward)}
     final_time = check_time - start_time
     #print(f'runtime: {final_time} s')
     return address, result
@@ -76,10 +77,12 @@ def benchmark(root_district, root_province, root_ward):
     text_file = 'text.txt'
     text_data = open(getDir(text_file), encoding='utf8')
     results = []
+    start = time.time()
     for i in text_data:
         results.append(search_address(Trie.search_word, root_ward, root_province, root_district, i))
     #print(results)
-
+    end = time.time()
+    
     #==================================================
     # get output data to compare (sorted by input)
     dir = getDir('public.json')
@@ -95,16 +98,21 @@ def benchmark(root_district, root_province, root_ward):
     # print comparison result
     passed = 0
     for i in range(len(results)):
-        if results[i][1][2][0] == sorted_data[i]['result']['ward']: \
-            #and results[i][1][1][0] == sorted_data[i]['result']['province'] \
-            #and results[i][1][0][0] == sorted_data[i]['result']['district']\
+        if results[i][1]['ward']['string'] == sorted_data[i]['result']['ward']: \
+            #and results[i][1]['province']['string'] == sorted_data[i]['result']['province'] \
+            #and results[i][1]['district']['string'] == sorted_data[i]['result']['district'] \
 
-            print(results[i][0].replace('\n',''))
-            print(results[i][1])
-            print(json.dumps(sorted_data[i]['result'], sort_keys=True, ensure_ascii=False))
+            #print(results[i][0].replace('\n',''))
+            #print(results[i][1])
+            #print(json.dumps(sorted_data[i]['result'], sort_keys=True, ensure_ascii=False))
             passed += 1
             pass
+        else:
+            #print('missed: ', results[i][0].replace('\n',''))
+            pass
     print(passed / len(results))
+    print((end-start) / len(results))
+    
     return
 
 def test(root_district, root_province, root_ward):
@@ -126,5 +134,7 @@ def test(root_district, root_province, root_ward):
     return
 
 if __name__ == "__main__":
+    os.system('cls||clear')
     root_district, root_province, root_ward = loadTries()
+    benchmark(root_district, root_province, root_ward)
     test(root_district, root_province, root_ward)

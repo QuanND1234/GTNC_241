@@ -17,10 +17,6 @@ def levenshteinRecursive(str1, str2, m, n):
           # Replace
             levenshteinRecursive(str1, str2, m - 1, n - 1))
     )    
-str1 = "kitten"
-str2 = "sitting"
-distance = levenshteinRecursive(str1, str2, len(str1), len(str2))
-print("Levenshtein Distance:", distance)
 
 class TrieNode:
     count = 0
@@ -149,6 +145,6 @@ class Trie:
                     break
             if (not found):
                 pass
-        return current_node.string, current_node.terminal
+        return {'string': current_node.string,
+                'terminal': current_node.terminal}
 
-    
