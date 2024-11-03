@@ -1,6 +1,7 @@
 import json
 from extract import getDir, saveToTxt
 from trie import TrieNode, Trie
+from bk_tree import BKNode, BKTree
 import time
 import os
 
@@ -49,26 +50,24 @@ def loadTries():
     ward_file = 'ward.txt'
     ward_data = open(getDir(ward_file), encoding='utf8')
 
-    root_district = Trie()
-    root_province = Trie()
-    root_ward = Trie()
+    root_district = BKTree()
+    root_province = BKTree()
+    root_ward = BKTree()
 
     for i in district_data:
         root_district.insert_word(i.replace('\n', '')) # remove linebreak from input file's line
-    root_district.printCount()
 
     for i in province_data:
         root_province.insert_word(i.replace('\n', ''))
-    root_province.printCount()
 
     for i in ward_data:
         root_ward.insert_word(i.replace('\n', ''))
 
     #==================================================
     # logging
-    saveToTxt(root_district.log(), 'root_district.txt')
-    saveToTxt(root_province.log(), 'root_province.txt')
-    saveToTxt(root_ward.log(), 'root_ward.txt')
+    #saveToTxt(root_district.log(), 'root_district.txt')
+    #saveToTxt(root_province.log(), 'root_province.txt')
+    #saveToTxt(root_ward.log(), 'root_ward.txt')
     return root_district, root_province, root_ward
 
 def benchmark(root_district, root_province, root_ward):
@@ -116,9 +115,7 @@ def benchmark(root_district, root_province, root_ward):
     return
 
 def test(root_district, root_province, root_ward):
-    #root_district.printCount()
-
-    
+    #root_district.printCount()    
     #==================================================
     # performance test: random string with fixed length
     import string
