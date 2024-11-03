@@ -164,13 +164,13 @@ class Trie:
     # if leven increase, chance -=1
     # if leven not increase, chance +=1 but can't exceed max (2)
     # if chance < 0, auto return none
-    def search_word_leven(self, word, node=None, current_leven=0, current_chance=2, max_chance=1):
+    def search_word_leven(self, word, node=None, current_leven=0, current_chance=1, max_chance=1):
         current_node = node if node else self.root
         # base cases:
         sub_word = word[:current_node.depth]
         leven = levenshtein(current_node.string, sub_word)
         if leven > current_leven:
-            print('miss a chance')
+            print('miss a chance') #NOTE: when miss a letter input word, we don't move to the next letter
             current_chance -= 1
         elif leven == current_leven and current_chance < max_chance:
             current_chance += 0.5
