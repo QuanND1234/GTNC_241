@@ -1,31 +1,32 @@
 
-def levenshteinRecursive(str1, str2, m, n):
+def levenshtein(str1, str2, m=-1, n=-1):
     # str1 is empty
-    if m == 0:
-        return n
+    if m == -len(str1)-1:
+        return 0
     # str2 is empty
-    if n == 0:
-        return m
-    if str1[m - 1] == str2[n - 1]:
-        return levenshteinRecursive(str1, str2, m - 1, n - 1)
+    if n == -len(str2)-1:
+        return 0
+    if str1[m] == str2[n]:
+        return levenshtein(str1, str2, m - 1, n - 1)
     return 1 + min(
-          # Insert     
-        levenshteinRecursive(str1, str2, m, n - 1),
+        # Insert
+        levenshtein(str1, str2, m, n - 1),
         min(
-              # Remove
-            levenshteinRecursive(str1, str2, m - 1, n),
-          # Replace
-            levenshteinRecursive(str1, str2, m - 1, n - 1))
-    )    
+            # Remove
+            levenshtein(str1, str2, m - 1, n),
+            # Replace
+            levenshtein(str1, str2, m - 1, n - 1))
+    )
 
 class TrieNode:
     count = 0
     indent = '  '
     # constructor
-    def __init__(self, string = '', letter = ''):
+    def __init__(self, string='', letter='', depth=0):
         self.string = string
         self.letter = letter
         self.children = []
+        self.depth = depth
         # end of legit word
         self.terminal = False
         self.fragment = False
@@ -49,7 +50,7 @@ class TrieNode:
     # log string recursively (find children nodes to log)
     def log(self, line_break = '\n',):
         log = ''
-        log += self.logString(line_break)
+        log += self.logString(line_break) + ': ' + str(self.depth)
         for child in self.children:
             log += child.log(line_break + TrieNode.indent)
         return log
@@ -105,6 +106,8 @@ class Trie:
 
     # basic insert
     def insert_word(self, word, current_str = '', type = 'terminal'):
+        if word =='':
+            return
         self.max_length = max(self.max_length, len(word))
         current_node = self.root
         # iter through input word
@@ -119,7 +122,7 @@ class Trie:
                     found = True
                     break
             if (not found):
-                current_node.children.append(TrieNode(current_str, letter))
+                current_node.children.append(TrieNode(current_str, letter, current_node.depth+1))
                 current_node = current_node.children[-1]
         if type == 'terminal':
             current_node.terminal = True
@@ -148,3 +151,23 @@ class Trie:
         return {'string': current_node.string,
                 'terminal': current_node.terminal}
 
+    '''
+    def search_word_leven(self, word, node=None, idx=0, lim=0.5):
+        current_node = node if node else self.root
+        # base cases:
+        leven = levenshtein(current_node.string, word)
+        if leven > 3:
+            return None
+            
+        
+        # iter through input word
+        for letter in word:
+            # iter though child node
+            for child in current_node.children:
+                child_node = self.search_word_leven(word, child)    
+            if (not found):
+                pass
+        return {'string': current_node.string,
+                'terminal': current_node.terminal,
+                'leven': leven}
+    '''

@@ -108,7 +108,7 @@ def benchmark(root_district, root_province, root_ward):
             passed += 1
             pass
         else:
-            #print('missed: ', results[i][0].replace('\n',''))
+            print('missed: ', results[i][0].replace('\n',''))
             pass
     print(passed / len(results))
     print((end-start) / len(results))
