@@ -129,8 +129,8 @@ def test(root_district, root_province, root_ward):
     #search_address(Trie.search_word, root_ward, root_province, root_district, rand_str)
 
     #print(search_address(Trie.search_word,root_ward, root_province, root_district, 'Thái Hòa Huyện Thái Thụy, Thái Bình'))
-    print('test result: ', root_ward.query('Xuân Lâm', max_distance=2))
-    print('test result: ', root_ward.query('inh Chau', max_distance=3))
+    print('test result: ', root_ward.search_word('Xuân Lâm', max_distance=2))
+    print('test result: ', root_ward.search_word('inh Chau', max_distance=3))
     #print(root_ward.search_word_leven('Xn Lâm'))
     return
 

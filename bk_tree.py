@@ -38,20 +38,20 @@ class BKTree:
         else:
             node.children[distance] = BKNode(word)
 
-    def query(self, word, max_distance=2):
+    def search_word(self, word, max_distance=2):
         results = []
         if self.root:
-            self._query(word, self.root, results, max_distance=max_distance)
+            self._search_word(word, self.root, results, max_distance=max_distance)
         return results
 
-    def _query(self, word, node, results, max_distance=2):
+    def _search_word(self, word, node, results, max_distance=2):
         distance = levenshtein_distance(word, node.word)
         if distance <= max_distance:
             results.append(node.word)
         
         for d in range(max(0, distance - max_distance), distance + max_distance + 1):
             if d in node.children:
-                self._query(word, node.children[d], results, max_distance=max_distance)
+                self._search_word(word, node.children[d], results, max_distance=max_distance)
 
 
 def all():
@@ -64,12 +64,12 @@ def all():
     max_dist = 2
     
     query_word = "ops"
-    matches = tree.query(query_word)
+    matches = tree.search_word(query_word)
     
     print(f"Words similar to '{query_word}' within distance {max_dist}: {matches}")
 
     query_word = "helt"
-    matches = tree.query(query_word, max_dist)
+    matches = tree.search_word(query_word, max_dist)
     
     print(f"Words similar to '{query_word}' within distance {max_dist}: {matches}")
     return
