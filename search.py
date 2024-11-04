@@ -17,9 +17,12 @@ def search_address(func, ward, province, district, address, time_limit = 0.09999
     result_district = []
     start_idx = 0
     for i in range(0, len(address)):
-        slice1 = address[i:ward.max_length]
-        slice2 = address[i:province.max_length]
-        slice3 = address[i:district.max_length]
+        #slice1 = address[i:ward.max_length]
+        #slice2 = address[i:province.max_length]
+        #slice3 = address[i:district.max_length]
+        slice1 = address[:i]
+        slice2 = address[:i]
+        slice3 = address[:i]
         result_ward += [func(ward, slice1)]
         result_province += [func(province, slice2)]
         result_district += [func(district, slice3)]
@@ -123,16 +126,16 @@ def test(root_district, root_province, root_ward):
     length = 300
     rand_str = ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
     print(rand_str)
-    search_address(Trie.search_word, root_ward, root_province, root_district, rand_str)
+    #search_address(Trie.search_word, root_ward, root_province, root_district, rand_str)
 
-    print(search_address(Trie.search_word,root_ward, root_province, root_district, 'Thái Hòa Huyện Thái Thụy, Thái Bình'))
-    print(root_ward.search_word('Xuân Lâm'))
-    print('test result: ', root_ward.search_word_leven('Bình Chau'))
+    #print(search_address(Trie.search_word,root_ward, root_province, root_district, 'Thái Hòa Huyện Thái Thụy, Thái Bình'))
+    print('test result: ', root_ward.query('Xuân Lâm', max_distance=2))
+    print('test result: ', root_ward.query('inh Chau', max_distance=3))
     #print(root_ward.search_word_leven('Xn Lâm'))
     return
 
 if __name__ == "__main__":
     os.system('cls||clear')
     root_district, root_province, root_ward = loadTries()
-    benchmark(root_district, root_province, root_ward)
+    #benchmark(root_district, root_province, root_ward)
     test(root_district, root_province, root_ward)
