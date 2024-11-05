@@ -42,7 +42,7 @@ class BKTree:
         results = []
         if self.root:
             self._search_word(word, self.root, results, max_distance=max_distance)
-        return results
+        return {'string': results}
 
     def _search_word(self, word, node, results, max_distance=2):
         distance = levenshtein_distance(word, node.word)

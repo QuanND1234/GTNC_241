@@ -33,14 +33,14 @@ def search_address(func, ward, province, district, address, time_limit = 0.09999
         #print(slice)
         #print(check_time)
         timer = check_time - start_time
-        if time_limit < timer:
-            result = {'district': getBest(result_district), 'provice': getBest(result_province), 'ward': getBest(result_ward)}
-            print('timeout on input: ', timer)
-            print(address)
-            return address, result
-    result = {'district': getBest(result_district), 'provice': getBest(result_province), 'ward': getBest(result_ward)}
+        #if time_limit < timer:
+        #    result = {'district': getBest(result_district), 'provice': getBest(result_province), 'ward': getBest(result_ward)}
+        #    print('timeout on input: ', timer)
+        #    print(address)
+        #    return address, result
+    result = {'district': result_district, 'provice': result_province, 'ward': result_ward}
     final_time = check_time - start_time
-    #print(f'runtime: {final_time} s')
+    print(f'runtime: {final_time} s')
     return address, result
 
 def loadTries():
@@ -81,7 +81,7 @@ def benchmark(root_district, root_province, root_ward):
     results = []
     start = time.time()
     for i in text_data:
-        results.append(search_address(Trie.search_word, root_ward, root_province, root_district, i))
+        results.append(search_address(BKTree.search_word, root_ward, root_province, root_district, i))
     #print(results)
     end = time.time()
     
@@ -100,6 +100,8 @@ def benchmark(root_district, root_province, root_ward):
     # print comparison result
     passed = 0
     for i in range(len(results)):
+        print(results[i][0])
+        print(results[i][1]['ward'])
         if results[i][1]['ward']['string'] == sorted_data[i]['result']['ward']: \
             #and results[i][1]['province']['string'] == sorted_data[i]['result']['province'] \
             #and results[i][1]['district']['string'] == sorted_data[i]['result']['district'] \
@@ -129,7 +131,7 @@ def test(root_district, root_province, root_ward):
     #search_address(Trie.search_word, root_ward, root_province, root_district, rand_str)
 
     #print(search_address(Trie.search_word,root_ward, root_province, root_district, 'Thái Hòa Huyện Thái Thụy, Thái Bình'))
-    print('test result: ', root_ward.search_word('Xuân Lâm', max_distance=2))
+    print('test result: ', root_ward.search_word('Bắc Trà', max_distance=3))
     print('test result: ', root_ward.search_word('inh Chau', max_distance=3))
     #print(root_ward.search_word_leven('Xn Lâm'))
     return
