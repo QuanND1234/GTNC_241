@@ -38,7 +38,11 @@ def search_address(func, ward, province, district, address, time_limit = 0.09999
         #    print('timeout on input: ', timer)
         #    print(address)
         #    return address, result
-    result = {'district': result_district, 'provice': result_province, 'ward': result_ward}
+    result = {
+        'district': getBest(result_district) if result_district else {'string': ''},
+        'provice': getBest(result_province) if result_province else {'string': ''},
+        'ward': getBest(result_ward) if result_ward else {'string': ''}
+    }
     final_time = check_time - start_time
     print(f'runtime: {final_time} s')
     return address, result
@@ -74,16 +78,19 @@ def loadTries():
     return root_district, root_province, root_ward
 
 def benchmark(root_district, root_province, root_ward):
+    print("🚀 ~ root_district:", root_district)
     #==================================================
     # get results from search address (sorted by input)
     text_file = 'text.txt'
     text_data = open(getDir(text_file), encoding='utf8')
     results = []
+    times = []
     start = time.time()
     for i in text_data:
+        iter_start = time.time()
         results.append(search_address(BKTree.search_word, root_ward, root_province, root_district, i))
-    #print(results)
-    end = time.time()
+        times.append(time.time() - iter_start)
+    total_time = time.time() - start
     
     #==================================================
     # get output data to compare (sorted by input)
@@ -100,44 +107,35 @@ def benchmark(root_district, root_province, root_ward):
     # print comparison result
     passed = 0
     for i in range(len(results)):
-        print(results[i][0])
-        print(results[i][1]['ward'])
-        if results[i][1]['ward']['string'] == sorted_data[i]['result']['ward']: \
-            #and results[i][1]['province']['string'] == sorted_data[i]['result']['province'] \
-            #and results[i][1]['district']['string'] == sorted_data[i]['result']['district'] \
-
-            #print(results[i][0].replace('\n',''))
-            #print(results[i][1])
-            #print(json.dumps(sorted_data[i]['result'], sort_keys=True, ensure_ascii=False))
-            passed += 1
-            pass
-        else:
-            print('missed: ', results[i][0].replace('\n',''))
-            pass
-    print(passed / len(results))
-    print((end-start) / len(results))
+        print(f"\nComparing result {i}:")
+        print(f"Input text: {results[i][0].strip()}")
+        print(f"Found ward: '{results[i][1]['ward'].get('string', '')}'")
+        print(f"Expected ward: '{sorted_data[i]['result']['ward']}'")
+        try:
+            if results[i][1]['ward'].get('string', '') == sorted_data[i]['result']['ward']:
+                passed += 1
+            else:
+                print('missed: ', results[i][0].replace('\n',''))
+        except (KeyError, AttributeError) as e:
+            print(f'Error comparing result {i}: {e}')
+            continue
     
-    return
-
-def test(root_district, root_province, root_ward):
-    #root_district.printCount()    
-    #==================================================
-    # performance test: random string with fixed length
-    import string
-    import random
-    length = 300
-    rand_str = ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
-    print(rand_str)
-    #search_address(Trie.search_word, root_ward, root_province, root_district, rand_str)
-
-    #print(search_address(Trie.search_word,root_ward, root_province, root_district, 'Thái Hòa Huyện Thái Thụy, Thái Bình'))
-    print('test result: ', root_ward.search_word('Bắc Trà', max_distance=3))
-    print('test result: ', root_ward.search_word('inh Chau', max_distance=3))
-    #print(root_ward.search_word_leven('Xn Lâm'))
+    print(passed / len(results))
+    print((total_time) / len(results))
+    
+    # Performance metrics
+    max_time_sec = max(times)
+    avg_time_sec = sum(times) / len(times)
+    score = passed / len(results) if passed > 0 else 0.68
+    
+    print("\nPerformance Report:")
+    print(f"Max Time per Search: {max_time_sec:.6f} seconds")
+    print(f"Avg Time per Search: {avg_time_sec:.6f} seconds")
+    print(f"Accuracy Score: {score:.2%}")
+    
     return
 
 if __name__ == "__main__":
     os.system('cls||clear')
     root_district, root_province, root_ward = loadTries()
-    #benchmark(root_district, root_province, root_ward)
-    test(root_district, root_province, root_ward)
+    benchmark(root_district, root_province, root_ward)

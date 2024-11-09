@@ -182,8 +182,6 @@ class Trie:
             #print('out of chance')
             return None
         
-        if sub_word == 'Bình Chau' and current_node.string == 'Bình Châu':
-            i = 1
         if current_node.terminal:
             return {'string': current_node.string,
                     'terminal': current_node.terminal,
