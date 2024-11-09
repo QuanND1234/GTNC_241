@@ -1,232 +1,219 @@
+def levenshtein(str1, str2, m=None, n=None):
+    if m == None:
+        m = len(str1)
+    # str2 is empty
+    if n == None:
+        n = len(str2)
+    # str1 is empty
+    if m == 0:
+        return n
+    # str2 is empty
+    if n == 0:
+        return m
+    if str1[m - 1] == str2[n - 1]:
+        return levenshtein(str1, str2, m - 1, n - 1)
+    return 1 + min(
+        # Insert     
+        levenshtein(str1, str2, m, n - 1),
+        min(
+            # Remove
+            levenshtein(str1, str2, m - 1, n),
+            # Replace
+            levenshtein(str1, str2, m - 1, n - 1))
+    )
+ 
 class TrieNode:
-    def __init__(self):
-        self.children = {}
-        self.is_end = False
-        self.value = None
+    count = 0
+    indent = '  '
+    # constructor
+    def __init__(self, string='', letter='', depth=0):
+        self.string = string
+        self.letter = letter
+        self.children = []
+        self.depth = depth
+        # end of legit word
+        self.terminal = False
+        self.fragment = False
+        # increase static counter
+        TrieNode.count += 1
+        
+    def matchLetter(self, letter):
+        return letter == self.letter
+        
+    # log number of nodes
+    def printCount(self):
+        print(TrieNode.count)
+    
+    # log current letter
+    def logLetter(self, line_break = ''):
+        #print(line_break + self.letter)
+        return line_break + self.letter
+
+    # log current string
+    def logString(self, line_break = ''):
+        #print(line_break + self.string)
+        return line_break + self.string
+
+    # log string recursively (find children nodes to log)
+    def log(self, line_break = '\n',):
+        log = ''
+        log += self.logString(line_break) + ': ' + str(self.depth)
+        for child in self.children:
+            log += child.log(line_break + TrieNode.indent)
+        return log
+
+    # log string recursively IF current node is terminal
+    def logTerminal(self, line_break = '\n'):
+        log = ''
+        if self.terminal:
+            log += self.logString(line_break)
+        for child in self.children:
+            log += child.logTerminal(line_break + TrieNode.indent)
+        return log
+            
+    # log string recursively IF current node is terminal
+    def logFragment(self, line_break = '\n'):
+        log = ''
+        if self.fragment:
+            log += self.logString(line_break)
+        for child in self.children:
+            log += child.logFragment(line_break + TrieNode.indent)
+        return log
+
 
 class Trie:
+    # constructor
     def __init__(self):
         self.root = TrieNode()
+        self.max_length = 0
+        
+    # log number of nodes
+    def printCount(self):
+        return self.root.printCount()
     
-    def insert(self, word, value=None):
-        node = self.root
-        # Convert to lowercase for case-insensitive matching
-        word = word.lower()
-        
-        for char in word:
-            if char not in node.children:
-                node.children[char] = TrieNode()
-            node = node.children[char]
-        
-        node.is_end = True
-        node.value = value if value else word
+    # log current letter
+    def logLetter(self, line_break = ''):
+        return self.root.logLetter(line_break = line_break)
 
-    def search_longest(self, text):
-        text = text.lower()
-        max_length = 0
-        result = None
-        n = len(text)
-        
-        for i in range(n):
-            node = self.root
-            j = i
-            current_match = None
+    # log current string
+    def logString(self, line_break = ''):
+        return self.root.logString(line_break = line_break)
+
+    # log string recursively (find children nodes to log)
+    def log(self, line_break = '\n',):
+        return self.root.log(line_break = line_break)
+
+    # log string recursively IF current node is terminal
+    def logTerminal(self, line_break = '\n'):
+        return self.root.logTerminal(line_break = line_break)
             
-            while j < n and text[j] in node.children:
-                node = node.children[text[j]]
-                if node.is_end:
-                    current_match = (node.value, j - i + 1)
-                j += 1
-            
-            if current_match and current_match[1] > max_length:
-                max_length = current_match[1]
-                result = current_match[0]
+    # log string recursively IF current node is terminal
+    def logFragment(self, line_break = '\n'):
+        return self.root.logFragment(line_break = line_break)
+
+    # basic insert
+    def insert_word(self, word, current_str = '', type = 'terminal'):
+        if word =='':
+            return
+        self.max_length = max(self.max_length, len(word))
+        current_node = self.root
+        # iter through input word
+        for letter in word:
+            current_str += letter
+            found = False
+            # iter though child node
+            for child in current_node.children:
+                if letter == child.letter:
+                    # switch node
+                    current_node = child
+                    found = True
+                    break
+            if (not found):
+                current_node.children.append(TrieNode(current_str, letter, current_node.depth+1))
+                current_node = current_node.children[-1]
+        if type == 'terminal':
+            current_node.terminal = True
+        elif type == 'fragment':
+            current_node.fragment = True
+        #print(current_str)
+        return
+
+    # basic search (Needs to enhance for auto correct)
+    def search_word(self, word):
+        current_node = self.root
+        # iter through input word
+        for letter in word:
+            found = False
+            # iter though child node
+            for child in current_node.children:
+                #print(child.letter)
+                #print(child.terminal)
+                if child.matchLetter(letter):
+                    # switch node
+                    current_node = child
+                    found = True
+                    break
+            if (not found):
+                pass
+        return {'string': current_node.string,
+                'terminal': current_node.terminal}
+
+
+
+    # idea: given a max chance number at the beginning let's say 2, 
+    # if leven increase, chance -=1
+    # if leven not increase, chance +=1 but can't exceed max (2)
+    # if chance < 0, auto return none
+    def search_word_leven(self, word, node=None, idx=0, current_leven=0, current_chance=1, max_chance=1):
+        current_node = node if node else self.root
+        # base cases:
+        print('different', idx, current_node.depth)
+        sub_word = word[:current_node.depth]
+        leven = levenshtein(current_node.string, sub_word)
+        if leven > current_leven:
+            #print('miss a chance') #NOTE: when miss a letter input word, we don't move to the next letter
+            #idx+=1
+            current_chance -= 1
+        elif leven == current_leven and current_chance < max_chance:
+            idx+=1
+            current_chance += 0.5
+        #print(sub_word + '|' + current_node.string + ': ' , leven, current_leven, current_chance)
+        if current_chance < 0:
+            #print('out of chance')
+            return None
         
+        if sub_word == 'Bình Chau' and current_node.string == 'Bình Châu':
+            i = 1
+        if current_node.terminal:
+            return {'string': current_node.string,
+                    'terminal': current_node.terminal,
+                    'leven': leven}
+        
+        # recursion ============================
+        children = []
+        result = {'string': current_node.string,
+                'terminal': current_node.terminal,
+                'leven': -1}
+        # iter through input word
+        #for letter in range(current_node.depth, len(word)):
+            # iter though child node
+        if idx >= len(word):
+            return None
+        #print(word[current_node.depth] + '|child num: ', len(current_node.children))
+        for child in current_node.children:
+            child_node = None
+            if child.matchLetter(word[idx]):
+                child_node = self.search_word_leven(word, node=child, idx=idx, current_leven=leven, current_chance=current_chance)
+            elif current_chance >= 0:
+                child_node = self.search_word_leven(word, node=child, idx=idx, current_leven=leven, current_chance=current_chance)
+                pass
+            if not child_node:
+                continue
+            if result['leven'] == -1 or result['leven'] > child_node['leven']:
+                result = child_node
+                pass
+        #if (not child_node):
+        #    pass
+        #print(result)
         return result
-
-def build_tries():
-    # Build province trie
-    province_trie = Trie()
-    with open('province.txt', 'r', encoding='utf-8') as f:
-        for line in f:
-            line = line.strip()
-            if line:  # Skip empty lines
-                # Split by | and get the province name
-                parts = line.split('|')
-                if len(parts) > 1:
-                    province = parts[1].strip()
-                    if province:
-                        province_trie.insert(province)
-
-    # Build district trie
-    district_trie = Trie()
-    with open('district.txt', 'r', encoding='utf-8') as f:
-        for line in f:
-            line = line.strip()
-            if line:
-                parts = line.split('|')
-                if len(parts) > 1:
-                    district = parts[1].strip()
-                    if district:
-                        district_trie.insert(district)
-
-    # Build ward trie
-    ward_trie = Trie()
-    with open('root_ward.txt', 'r', encoding='utf-8') as f:
-        for line in f:
-            line = line.strip()
-            if line:
-                parts = line.split('|')
-                if len(parts) > 1:
-                    ward = parts[1].strip()
-                    if ward:
-                        ward_trie.insert(ward)
-
-    return province_trie, district_trie, ward_trie
-
-def preprocess_address(text):
-    """
-    Preprocess address text to extract potential province, district and ward components
-    Returns lists of potential matches for each component
-    """
-    # Common prefixes/indicators
-    province_indicators = [
-        "tỉnh", "t.", "t", "tinh", "tp.", "tp", "thành phố", 
-        "thanh pho", "tỉnh.", "tinh."
-    ]
     
-    district_indicators = [
-        "quận", "quan", "q.", "q", "huyện", "huyen", "h.", "h",
-        "tx.", "thị xã", "thi xa", "tp.", "thành phố", "thanh pho"
-    ]
-    
-    ward_indicators = [
-        "phường", "phuong", "p.", "p", "xã", "xa", "x.", "x",
-        "thị trấn", "thi tran", "tt.", "tt"
-    ]
-
-    def normalize_text(text):
-        """Normalize text by removing extra spaces and converting to lowercase"""
-        text = text.lower()
-        text = ' '.join(text.split())
-        return text
-    
-    def split_address(text):
-        """Split address into components based on common delimiters"""
-        delimiters = [',', '-', '/', ';']
-        parts = [text]
-        for delimiter in delimiters:
-            new_parts = []
-            for part in parts:
-                new_parts.extend([p.strip() for p in part.split(delimiter)])
-            parts = new_parts
-        return [p for p in parts if p]
-
-    # Normalize input text
-    text = normalize_text(text)
-    
-    # Split into components
-    components = split_address(text)
-    
-    # Initialize lists for each address component
-    province_candidates = []
-    district_candidates = []
-    ward_candidates = []
-    
-    # Process each component
-    for component in components:
-        component = component.strip()
-        
-        # Check for province indicators
-        for indicator in province_indicators:
-            if component.startswith(indicator + " "):
-                province_candidates.append(component[len(indicator):].strip())
-            elif component.endswith(" " + indicator):
-                province_candidates.append(component[:-len(indicator)].strip())
-        
-        # Check for district indicators
-        for indicator in district_indicators:
-            if component.startswith(indicator + " "):
-                district_candidates.append(component[len(indicator):].strip())
-            elif component.endswith(" " + indicator):
-                district_candidates.append(component[:-len(indicator)].strip())
-        
-        # Check for ward indicators
-        for indicator in ward_indicators:
-            if component.startswith(indicator + " "):
-                ward_candidates.append(component[len(indicator):].strip())
-            elif component.endswith(" " + indicator):
-                ward_candidates.append(component[:-len(indicator)].strip())
-    
-    # Add the original components as candidates if they don't match any indicators
-    for component in components:
-        component = component.strip()
-        # Add to all candidate lists if it doesn't start with any indicators
-        if not any(component.lower().startswith(ind + " ") for ind in 
-                  province_indicators + district_indicators + ward_indicators):
-            province_candidates.append(component)
-            district_candidates.append(component)
-            ward_candidates.append(component)
-
-    return province_candidates, district_candidates, ward_candidates
-
-def process_address(text, province_trie, district_trie, ward_trie):
-    """
-    Process address text and return structured result using trie matching
-    """
-    result = {
-        "province": "",
-        "district": "",
-        "ward": ""
-    }
-    
-    # Preprocess the address text
-    province_candidates, district_candidates, ward_candidates = preprocess_address(text)
-    
-    # Try to match province
-    for candidate in province_candidates:
-        province = province_trie.search_longest(candidate)
-        if province:
-            result["province"] = province
-            break
-    
-    # Try to match district
-    for candidate in district_candidates:
-        district = district_trie.search_longest(candidate)
-        if district:
-            result["district"] = district
-            break
-    
-    # Try to match ward
-    for candidate in ward_candidates:
-        ward = ward_trie.search_longest(candidate)
-        if ward:
-            result["ward"] = ward
-            break
-    
-    return result
-
-def main():
-    # Build tries
-    province_trie, district_trie, ward_trie = build_tries()
-    
-    # Process full file
-    output = []
-    with open('text.txt', 'r', encoding='utf-8') as f:
-        for line in f:
-            line = line.strip()
-            if line:
-                result = process_address(line, province_trie, district_trie, ward_trie)
-                print("🚀 ~ result:", result)
-                output.append({
-                    "text": line,
-                    "result": result
-                })
-    
-    # Write output to JSON file
-    import json
-    with open('output.json', 'w', encoding='utf-8') as f:
-        json.dump(output, f, ensure_ascii=False, indent=2)
-
-if __name__ == "__main__":
-    main()
